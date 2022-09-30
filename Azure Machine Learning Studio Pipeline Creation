@@ -1,0 +1,114 @@
+{
+   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+   "contentVersion": "1.0.0.0",
+   "parameters": {},
+   "variables": {
+      "workspaceName": "acaml",
+      "storageAccountName": "[toLower( concat( 'acdata', substring( uniquestring(resourceGroup().id), 0, 4 ) ) )]",
+      "keyVaultName": "[toLower( concat( 'ackey-', substring( uniquestring(resourceGroup().id), 0, 4 ) ) )]",
+      "applicationInsightsName": "[toLower( concat( 'acai-', substring( uniquestring(resourceGroup().id), 0, 4 ) ) )]",
+      "computeName": "[toLower( concat( 'acaml-', substring( uniquestring(resourceGroup().id), 0, 4 ) ) )]",
+      "location": "[resourceGroup().location]"
+  },
+   "resources": [
+       {
+           "type": "Microsoft.Storage/storageAccounts",
+           "apiVersion": "2019-06-01",
+           "name": "[variables('storageAccountName')]",
+           "location": "[variables('location')]",
+           "sku": {
+               "name": "Standard_LRS"
+           },
+           "kind": "StorageV2",
+           "properties": {
+               "encryption": {
+                   "services": {
+                       "blob": {
+                           "enabled": true
+                       },
+                       "file": {
+                           "enabled": true
+                       }
+                   },
+                   "keySource": "Microsoft.Storage"
+               },
+               "supportsHttpsTrafficOnly": true
+           }
+       },
+       {
+           "type": "Microsoft.KeyVault/vaults",
+           "apiVersion": "2019-09-01",
+           "name": "[variables('keyVaultName')]",
+           "location": "[variables('location')]",
+           "properties": {
+               "tenantId": "[subscription().tenantId]",
+               "sku": {
+                   "name": "standard",
+                   "family": "A"
+               },
+               "enableSoftDelete": false,
+               "accessPolicies": []
+           }
+       },
+       {
+           "type": "Microsoft.Insights/components",
+           "apiVersion": "2020-02-02-preview",
+           "name": "[variables('applicationInsightsName')]",
+           "location": "[variables('location')]",
+           "kind": "web",
+           "properties": {
+               "Application_Type": "web"
+           }
+       },
+       {
+           "type": "Microsoft.MachineLearningServices/workspaces",
+           "apiVersion": "2020-08-01",
+           "name": "[variables('workspaceName')]",
+           "location": "[variables('location')]",
+           "sku": {
+            "name": "Basic",
+            "tier": "Basic"
+           },
+           "dependsOn": [
+               "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
+               "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+               "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+           ],
+           "identity": {
+               "type": "systemAssigned"
+           },
+           "properties": {
+               "friendlyName": "[variables('workspaceName')]",
+               "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+               "keyVault": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+               "applicationInsights": "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
+           }
+       },
+       {
+         "type":"Microsoft.MachineLearningServices/workspaces/computes",
+         "apiVersion":"2018-11-19",
+         "name":"[concat(variables('workspaceName'), '/', variables('computeName'))]",
+         "location": "[variables('location')]",
+         "dependsOn": [
+            "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
+         ],
+         "properties":{
+            "disableLocalAuth": false,
+            "computeType": "AmlCompute",
+            "computeLocation": "[variables('location')]",
+            "properties": {
+               "vmSize": "STANDARD_DS2_V2",
+               "vmPriority": "Dedicated",
+               "scaleSettings": {
+                  "maxNodeCount": 1,
+                  "minNodeCount": 0,
+                  "nodeIdleTimeBeforeScaleDown": "PT30M"
+               },
+               "remoteLoginPortPublicAccess": "Enabled",
+               "osType": "Linux",
+               "isolatedNetwork": false  
+            }
+         } 
+      }
+   ]
+}
