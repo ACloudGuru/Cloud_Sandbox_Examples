@@ -1,0 +1,60 @@
+resources:
+- type: compute.v1.instance
+  name: web-agent-server
+  properties:
+    zone: us-east1-b
+    machineType: https://www.googleapis.com/compute/v1/projects/PUTSTUDENTPROJECTIDHERE/zones/us-east1-b/machineTypes/f1-micro
+    disks:
+    - deviceName: web-agent-server
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-10
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          apt update
+          apt install apache2 -y
+          mkdir /var/www/html/images
+          gsutil -m cp -r gs://acg-gcloud-course-resources/network-engineer/cdn/images/* /var/www/html/images
+          cat > /var/www/html/index.html << EOF
+          <!DOCTYPE html>
+          <html>
+              
+              <head>
+                  <meta charset="utf-8">
+                  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                  <title>DEMO WEB PAGE</title>
+              </head>
+              <body>
+                  
+                  <h1>Welcome to your demonstration website</h1>
+                  <br>
+                  <img src='images/icon_cloud.png' width='30%'>
+          EOF
+    serviceAccounts:
+      - email: default
+        scopes: 
+          - https://www.googleapis.com/auth/devstorage.read_only
+          - https://www.googleapis.com/auth/logging.write
+          - https://www.googleapis.com/auth/monitoring.write
+          - https://www.googleapis.com/auth/servicecontrol
+          - https://www.googleapis.com/auth/service.management.readonly
+          - https://www.googleapis.com/auth/trace.append
+    tags:
+      items: ["http-server"]
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/PUTSTUDENTPROJECTIDHERE/global/networks/default
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+- type: compute.v1.firewall
+  name: default-allow-http 
+  properties:
+    targetTags: ["http-server"]
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+      - IPProtocol: TCP
+        ports: ["80"]
