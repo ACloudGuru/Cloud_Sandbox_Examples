@@ -1,0 +1,57 @@
+resources:
+- type: compute.v1.network
+  name: network-1
+  properties:
+    autoCreateSubnetworks: false
+- name: subnet-a
+  type: compute.v1.subnetwork
+  properties:
+    ipCidrRange: 10.0.1.0/24
+    network: $(ref.network-1.selfLink)
+    privateIpGoogleAccess: false
+    region: us-central1
+- name: ssh-network-1
+  type: compute.v1.firewall
+  properties:
+    network: $(ref.network-1.selfLink)
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+    - IPProtocol: TCP
+      ports: ["22"]
+- type: compute.v1.firewall
+  name: default-allow-http-1
+  properties:
+    network: $(ref.network-1.selfLink)
+    targetTags: ["http-server"]
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+      - IPProtocol: TCP
+        ports: ["80"] 
+- type: compute.v1.network
+  name: network-2
+  properties:
+    autoCreateSubnetworks: false
+- name: subnet-b
+  type: compute.v1.subnetwork
+  properties:
+    ipCidrRange: 10.0.2.0/24
+    network: $(ref.network-2.selfLink)
+    privateIpGoogleAccess: false
+    region: us-east1
+- name: ssh-network-2
+  type: compute.v1.firewall
+  properties:
+    network: $(ref.network-2.selfLink)
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+    - IPProtocol: TCP
+      ports: ["22"]
+- type: compute.v1.firewall
+  name: default-allow-http-2
+  properties:
+    network: $(ref.network-2.selfLink)
+    targetTags: ["http-server"]
+    sourceRanges: ["0.0.0.0/0"]
+    allowed:
+      - IPProtocol: TCP
+        ports: ["80"] 
