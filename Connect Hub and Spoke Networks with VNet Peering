@@ -265,19 +265,4 @@
         }
         
     ],
-    "outputs": {
-        "vmsWithLogin": {
-             "type": "Array",
-             "value": [
-                 {
-                     "name": "[variables('vm2').name]",
-                     "showPrivateIp": true
-                 },                 
-                 {
-                     "name": "[variables('vm1').name]",
-                     "showPrivateIp": true
-                 }
-             ]
-         }
-    }
 }
