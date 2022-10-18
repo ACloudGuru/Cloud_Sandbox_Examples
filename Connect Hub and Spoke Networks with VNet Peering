@@ -21,7 +21,17 @@
             "subnetName": "subnet1",
             "subnetPrefix": "10.1.1.0/24",
             "nsgName": "spoke1-vnet-nsg"          
-        }   
+        },
+        "vm1": {
+            "name": "appserver",
+            "vmSize": "Standard_B1ms",
+            "nicName": "appserver-nic1"
+        },
+        "vm2": {
+            "name": "jumpserver",
+            "vmSize": "Standard_B1ms",
+            "nicName": "jumpserver-nic1"
+        }      
     },
     "resources": [
         {
@@ -122,7 +132,141 @@
             },
             "kind": "Storage",
             "properties": {}
-          }
+          },
+
+        {
+            "apiVersion": "2017-06-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vm1').nicName]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks/', variables('vnet1').name)]"
+            ],
+            "properties": {
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet1').name, variables('vnet1').subnetName)]"
+                    }
+                  }
+                }
+              ]
+            }
+        },
+        {
+            "apiVersion": "2017-06-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vm2').nicName]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks/', variables('vnet2').name)]"
+            ],
+            "properties": {
+              "ipConfigurations": [
+                {
+                  "name": "ipconfig1",
+                  "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                      "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet2').name, variables('vnet2').subnetName)]"
+                    }
+                  }
+                }
+              ]
+            }
+        },
+
+        {
+            "apiVersion": "2017-03-30",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vm1').name]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+              "[resourceId('Microsoft.Network/networkInterfaces/', variables('vm1').nicName)]"
+            ],
+            "properties": {
+              "hardwareProfile": {
+                "vmSize": "[variables('vm1').vmSize]"
+              },
+              "osProfile": {
+                "computerName": "[variables('vm1').name]",
+                "adminUsername": "user-123",
+                "adminPassword": "adminPassword123"
+              },
+              "storageProfile": {
+                "imageReference": {
+                  "publisher": "[variables('imagePublisher')]",
+                  "offer": "[variables('imageOffer')]",
+                  "sku": "[variables('osVersion')]",
+                  "version": "latest"
+                },
+                "osDisk": {
+                  "createOption": "FromImage"
+                }
+              },
+              "networkProfile": {
+                "networkInterfaces": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('vm1').nicName)]"
+                  }
+                ]
+              },
+              "diagnosticsProfile": {
+                "bootDiagnostics": {
+                  "enabled": true,
+                  "storageUri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2016-01-01').primaryEndpoints.blob)]"
+                }
+              }
+            }
+          },
+          {
+            "apiVersion": "2017-03-30",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vm2').name]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+              "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+              "[resourceId('Microsoft.Network/networkInterfaces/', variables('vm2').nicName)]"
+            ],
+            "properties": {
+              "hardwareProfile": {
+                "vmSize": "[variables('vm2').vmSize]"
+              },
+              "osProfile": {
+                "computerName": "[variables('vm2').name]",
+                "adminUsername": "user-123",
+                "adminPassword": "adminPassword123"
+              },
+              "storageProfile": {
+                "imageReference": {
+                  "publisher": "[variables('imagePublisher')]",
+                  "offer": "[variables('imageOffer')]",
+                  "sku": "[variables('osVersion')]",
+                  "version": "latest"
+                },
+                "osDisk": {
+                  "createOption": "FromImage"
+                }
+              },
+              "networkProfile": {
+                "networkInterfaces": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('vm2').nicName)]"
+                  }
+                ]
+              },
+              "diagnosticsProfile": {
+                "bootDiagnostics": {
+                  "enabled": true,
+                  "storageUri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2016-01-01').primaryEndpoints.blob)]"
+                }
+              }
+            }
+        }
         
     ]
 }
