@@ -6,7 +6,7 @@ Description:
 Mappings:
   RegionMap:
     us-east-1:
-      AMI: %ami-203%
+      AMI: ami-032930428bf1abbff
 Resources:
   AccessKey:
     Type: AWS::IAM::AccessKey
