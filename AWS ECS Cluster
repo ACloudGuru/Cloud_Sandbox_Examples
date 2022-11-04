@@ -60,7 +60,7 @@
     "Mappings": {
         "AWSRegionToAMI": {
             "us-east-1": {
-                "AMI": "%ami-125%"
+                "AMI": "ami-032930428bf1abbff"
             }
         }
     },
@@ -415,7 +415,7 @@
         "BastionInstance": {
             "Type": "AWS::EC2::Instance",
             "Properties": {
-                "ImageId": "%ami-43%",
+                "ImageId": "ami-032930428bf1abbff",
                 "InstanceType": "t2.micro",
                 "Tags": [
                     {
