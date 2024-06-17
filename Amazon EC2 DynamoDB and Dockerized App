@@ -105,7 +105,7 @@ Resources:
                   send(event, context, status, responseData, None)
       Handler: index.lambda_handler
       Role: !GetAtt LambdaRole.Arn
-      Runtime: python3.7
+      Runtime: python3.9
       Timeout: 60
 
   InitializeVPC:
