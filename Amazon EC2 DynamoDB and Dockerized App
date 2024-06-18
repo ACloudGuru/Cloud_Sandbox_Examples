@@ -3,10 +3,10 @@ Description:
   to a public EC2 instance. The EC2 instance is configured using files from 
   github repository here - https://github.com/linuxacademy/Content-AWS-Certified-Data-Analytics---Speciality 
   This template also sets up a DynamoDB table and populates it with some data.
-Mappings:
-  RegionMap:
-    us-east-1:
-      AMI: ami-032930428bf1abbff
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-minimal-kernel-default-x86_64'
 Resources:
   AccessKey:
     Type: AWS::IAM::AccessKey
@@ -162,7 +162,7 @@ Resources:
         S3Bucket: 'das-c01-data-analytics-specialty'
         S3Key: 'Lab_Joining_Enriching_Transforming_Streaming_Data_Amazon_Kinesis/create-users-dynamodb-lambda.zip'
       Handler: index.handler
-      Runtime: nodejs12.x
+      Runtime: nodejs18.x
       Role: !GetAtt LnLambdaExecutionAndDynamoRole.Arn
       Timeout: 60
   LnPopulateDynamoDBTableInit:
@@ -192,12 +192,8 @@ Resources:
     DependsOn:
       - LnSecurityGroupWebserver
     Properties:
-      InstanceType: t3a.medium
-      ImageId:
-        Fn::FindInMap:
-        - RegionMap
-        - !Ref AWS::Region
-        - AMI
+      InstanceType: 't3a.medium'
+      ImageId: !Ref LatestAmiId
       Tags:
         - Key: Name
           Value: !Join [ '-', [!Sub '${AWS::StackName}', 'kinesis-helper-server'] ]
