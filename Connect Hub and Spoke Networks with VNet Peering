@@ -193,9 +193,7 @@
                 "vmSize": "[variables('vm1').vmSize]"
               },
               "osProfile": {
-                "computerName": "[variables('vm1').name]",
-                "adminUsername": "user-123",
-                "adminPassword": "adminPassword123"
+                "computerName": "[variables('vm1').name]"
               },
               "storageProfile": {
                 "imageReference": {
@@ -237,9 +235,7 @@
                 "vmSize": "[variables('vm2').vmSize]"
               },
               "osProfile": {
-                "computerName": "[variables('vm2').name]",
-                "adminUsername": "user-123",
-                "adminPassword": "adminPassword123"
+                "computerName": "[variables('vm2').name]"
               },
               "storageProfile": {
                 "imageReference": {
